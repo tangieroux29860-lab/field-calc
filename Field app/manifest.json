@@ -1,0 +1,20 @@
+{
+  "name": "Land Surveyor Field Calculator",
+  "short_name": "Surveyor Calc",
+  "description": "Professional field calculator for land surveyors - ENZ coordinates, grid bearing NAD83",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#f97316",
+  "scope": "/",
+  "icons": [
+    {
+      "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'><rect fill='%23f97316' width='192' height='192'/><text x='96' y='130' font-size='90' font-weight='bold' fill='white' text-anchor='middle' font-family='Arial'>📐</text></svg>",
+      "sizes": "192x192",
+      "type": "image/svg+xml"
+    }
+  ],
+  "categories": ["productivity", "tools"],
+  "orientation": "portrait",
+  "display_override": ["window-controls-overlay", "standalone", "minimal-ui", "browser"]
+}
