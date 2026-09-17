@@ -2,7 +2,7 @@
   "name": "Land Surveyor Field Calculator",
   "short_name": "Surveyor Calc",
   "description": "Professional field calculator for land surveyors - ENZ coordinates, grid bearing NAD83",
-  "start_url": "/",
+  "start_url": "/field-calc/",
   "display": "standalone",
   "background_color": "#ffffff",
   "theme_color": "#f97316",
