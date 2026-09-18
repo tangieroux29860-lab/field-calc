@@ -6,391 +6,52 @@
     <meta name="description" content="Land Surveyor Field Calculator - ENZ coordinates, grid bearing NAD83">
     <meta name="theme-color" content="#f97316">
     <title>Land Surveyor Calc</title>
-    <script src="/icons.js"></script>
-    <link rel="manifest" href="/manifest.json">
+    <script src="./icons.js"></script>
+    <link rel="manifest" href="./manifest.json">
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        
-        html, body {
-            height: 100%;
-            width: 100%;
-            overflow: hidden;
-        }
-        
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: linear-gradient(135deg, #fef3c7 0%, #fff7ed 100%);
-            color: #1f2937;
-            padding: 0;
-        }
-        
-        .container {
-            width: 100%;
-            height: 100%;
-            margin: 0 auto;
-            background: white;
-            border-radius: 0;
-            box-shadow: none;
-            overflow: hidden;
-            display: flex;
-            flex-direction: column;
-        }
-        
-        header {
-            background: linear-gradient(135deg, #f97316 0%, #ea580c 100%);
-            color: white;
-            padding: 15px;
-            text-align: center;
-            box-shadow: 0 2px 8px rgba(249, 115, 22, 0.2);
-            flex-shrink: 0;
-        }
-        
-        header h1 {
-            font-size: 22px;
-            font-weight: 700;
-            margin-bottom: 3px;
-        }
-        
-        header p {
-            font-size: 11px;
-            opacity: 0.9;
-        }
-        
-        .unit-badge {
-            display: inline-block;
-            background: rgba(255, 255, 255, 0.3);
-            padding: 3px 10px;
-            border-radius: 20px;
-            font-size: 10px;
-            font-weight: 600;
-            margin-top: 5px;
-        }
-        
-        #unitScreen, #calculatorScreen, #resultsScreen {
-            flex: 1;
-            display: none;
-            flex-direction: column;
-            padding: 15px;
-            overflow-y: auto;
-            -webkit-overflow-scrolling: touch;
-            overflow-x: hidden;
-            max-width: 100%;
-            width: 100%;
-        }
-        
-        .screen {
-            display: none !important;
-        }
-        
-        .screen.active {
-            display: flex !important;
-        }
-        
-        #unitScreen.active {
-            display: flex !important;
-        }
-        
-        #calculatorScreen.active {
-            display: flex !important;
-        }
-        
-        #resultsScreen.active {
-            display: flex !important;
-        }
-        
-        .unit-selection {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 10px;
-            margin-top: 15px;
-        }
-        
-        .unit-btn {
-            padding: 14px;
-            border: 2px solid #fed7aa;
-            background: #fffbf0;
-            border-radius: 12px;
-            cursor: pointer;
-            font-size: 13px;
-            font-weight: 600;
-            transition: all 0.3s ease;
-            text-align: center;
-            color: #92400e;
-        }
-        
-        .unit-btn:hover {
-            background: #fed7aa;
-            border-color: #f97316;
-        }
-        
-        .unit-btn.selected {
-            background: #f97316;
-            border-color: #f97316;
-            color: white;
-        }
-        
-        .menu {
-            display: grid;
-            grid-template-columns: 1fr;
-            gap: 10px;
-            margin-top: 15px;
-        }
-        
-        .menu-btn {
-            padding: 14px;
-            background: linear-gradient(135deg, #fed7aa 0%, #fecaca 100%);
-            border: none;
-            border-radius: 12px;
-            cursor: pointer;
-            font-size: 15px;
-            font-weight: 600;
-            color: #7c2d12;
-            transition: all 0.3s ease;
-            text-align: left;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        
-        .menu-btn:hover {
-            background: linear-gradient(135deg, #f97316 0%, #ea580c 100%);
-            color: white;
-            transform: translateX(4px);
-        }
-        
-        .menu-btn i {
-            font-size: 20px;
-        }
-        
-        .form-group {
-            margin-bottom: 12px;
-        }
-        
-        label {
-            display: block;
-            font-weight: 600;
-            color: #7c2d12;
-            margin-bottom: 4px;
-            font-size: 12px;
-        }
-        
-        input, select {
-            width: 100%;
-            padding: 8px 10px;
-            border: 2px solid #fed7aa;
-            border-radius: 6px;
-            font-size: 13px;
-            font-family: inherit;
-            transition: border-color 0.3s ease;
-        }
-        
-        input:focus, select:focus {
-            outline: none;
-            border-color: #f97316;
-        }
-        
-        input[type="number"] {
-            font-variant-numeric: tabular-nums;
-        }
-        
-        .tabs {
-            display: flex;
-            gap: 3px;
-            margin-bottom: 10px;
-            border-bottom: 2px solid #fed7aa;
-            flex-wrap: wrap;
-        }
-        
-        .tab-btn {
-            padding: 5px 7px;
-            background: none;
-            border: none;
-            border-bottom: 3px solid transparent;
-            cursor: pointer;
-            font-weight: 600;
-            color: #d97706;
-            font-size: 10px;
-            white-space: nowrap;
-            transition: all 0.3s ease;
-            margin-bottom: -2px;
-            flex: 1;
-            min-width: 60px;
-            text-align: center;
-        }
-        
-        .tab-btn.active {
-            border-bottom-color: #f97316;
-            color: #f97316;
-        }
-        
-        .tab-content {
-            display: none;
-            overflow-x: hidden;
-            max-width: 100%;
-        }
-        
-        .tab-content.active {
-            display: block;
-        }
-        
-        button.btn-primary {
-            width: 100%;
-            padding: 10px;
-            background: linear-gradient(135deg, #f97316 0%, #ea580c 100%);
-            color: white;
-            border: none;
-            border-radius: 6px;
-            font-size: 14px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            margin-top: 12px;
-        }
-        
-        button.btn-primary:hover {
-            transform: scale(1.02);
-            box-shadow: 0 4px 12px rgba(249, 115, 22, 0.3);
-        }
-        
-        button.btn-primary:active {
-            transform: scale(0.98);
-        }
-        
-        .btn-secondary {
-            width: 100%;
-            padding: 10px;
-            background: #fed7aa;
-            color: #7c2d12;
-            border: 2px solid #f97316;
-            border-radius: 6px;
-            font-size: 14px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            margin-top: auto;
-        }
-        
-        .btn-secondary:hover {
-            background: #fecaca;
-        }
-        
-        .results {
-            background: #fef3c7;
-            border-left: 4px solid #f97316;
-            padding: 10px;
-            border-radius: 6px;
-            margin-top: 10px;
-            word-wrap: break-word;
-            overflow-x: hidden;
-            max-width: 100%;
-        }
-        
-        .result-item {
-            margin-bottom: 6px;
-            padding-bottom: 6px;
-            border-bottom: 1px solid #fed7aa;
-        }
-        
-        .result-item:last-child {
-            margin-bottom: 0;
-            padding-bottom: 0;
-            border-bottom: none;
-        }
-        
-        .result-label {
-            font-size: 10px;
-            color: #92400e;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-        
-        .result-value {
-            font-size: 14px;
-            font-weight: 700;
-            color: #7c2d12;
-            font-variant-numeric: tabular-nums;
-            word-break: break-word;
-            overflow-x: hidden;
-        }
-        
-        .error {
-            background: #fee2e2;
-            color: #991b1b;
-            padding: 10px;
-            border-radius: 6px;
-            font-size: 12px;
-            margin-top: 10px;
-            border-left: 4px solid #dc2626;
-            max-width: 100%;
-            overflow-x: hidden;
-        }
-        
-        .success {
-            background: #ecfdf5;
-            color: #065f46;
-            padding: 10px;
-            border-radius: 6px;
-            font-size: 12px;
-            margin-top: 10px;
-            border-left: 4px solid #10b981;
-        }
-        
-        .screen-title {
-            font-size: 18px;
-            font-weight: 700;
-            color: #7c2d12;
-            margin-bottom: 12px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        
-        .screen-title i {
-            font-size: 20px;
-            color: #f97316;
-        }
-        
-        .back-btn {
-            background: #fed7aa;
-            border: 2px solid #f97316;
-            color: #7c2d12;
-            padding: 5px 8px;
-            border-radius: 4px;
-            cursor: pointer;
-            font-weight: 600;
-            font-size: 11px;
-            margin-bottom: 10px;
-            display: flex;
-            align-items: center;
-            gap: 3px;
-            width: fit-content;
-            transition: all 0.3s ease;
-            flex-shrink: 0;
-        }
-        
-        .back-btn:hover {
-            background: #fecaca;
-        }
-        
-        .help-text {
-            font-size: 11px;
-            color: #92400e;
-            margin-bottom: 10px;
-            font-style: italic;
-        }
-        
-        .calculator-panel {
-            display: flex;
-            flex-direction: column;
-            max-width: 100%;
-            width: 100%;
-            overflow: hidden;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html, body { height: 100%; width: 100%; overflow: hidden; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: linear-gradient(135deg, #fef3c7 0%, #fff7ed 100%); color: #1f2937; padding: 0; }
+        .container { width: 100%; height: 100%; margin: 0 auto; background: white; border-radius: 0; box-shadow: none; overflow: hidden; display: flex; flex-direction: column; }
+        header { background: linear-gradient(135deg, #f97316 0%, #ea580c 100%); color: white; padding: 15px; text-align: center; box-shadow: 0 2px 8px rgba(249, 115, 22, 0.2); flex-shrink: 0; }
+        header h1 { font-size: 22px; font-weight: 700; margin-bottom: 3px; }
+        header p { font-size: 11px; opacity: 0.9; }
+        .unit-badge { display: inline-block; background: rgba(255, 255, 255, 0.3); padding: 3px 10px; border-radius: 20px; font-size: 10px; font-weight: 600; margin-top: 5px; }
+        #unitScreen, #calculatorScreen, #resultsScreen { flex: 1; display: none; flex-direction: column; padding: 15px; overflow-y: auto; -webkit-overflow-scrolling: touch; overflow-x: hidden; max-width: 100%; width: 100%; }
+        #unitScreen.active, #calculatorScreen.active, #resultsScreen.active { display: flex !important; }
+        .unit-selection { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 15px; }
+        .unit-btn { padding: 14px; border: 2px solid #fed7aa; background: #fffbf0; border-radius: 12px; cursor: pointer; font-size: 13px; font-weight: 600; transition: all 0.3s ease; text-align: center; color: #92400e; }
+        .unit-btn:hover { background: #fed7aa; border-color: #f97316; }
+        .unit-btn.selected { background: #f97316; border-color: #f97316; color: white; }
+        .menu { display: grid; grid-template-columns: 1fr; gap: 10px; margin-top: 15px; }
+        .menu-btn { padding: 14px; background: linear-gradient(135deg, #fed7aa 0%, #fecaca 100%); border: none; border-radius: 12px; cursor: pointer; font-size: 15px; font-weight: 600; color: #7c2d12; transition: all 0.3s ease; text-align: left; display: flex; justify-content: space-between; align-items: center; }
+        .menu-btn:hover { background: linear-gradient(135deg, #f97316 0%, #ea580c 100%); color: white; transform: translateX(4px); }
+        .menu-btn i { font-size: 20px; }
+        .form-group { margin-bottom: 12px; }
+        label { display: block; font-weight: 600; color: #7c2d12; margin-bottom: 4px; font-size: 12px; }
+        input, select { width: 100%; padding: 8px 10px; border: 2px solid #fed7aa; border-radius: 6px; font-size: 13px; font-family: inherit; transition: border-color 0.3s ease; }
+        input:focus, select:focus { outline: none; border-color: #f97316; }
+        .tabs { display: flex; gap: 3px; margin-bottom: 10px; border-bottom: 2px solid #fed7aa; flex-wrap: wrap; }
+        .tab-btn { padding: 5px 7px; background: none; border: none; border-bottom: 3px solid transparent; cursor: pointer; font-weight: 600; color: #d97706; font-size: 10px; white-space: nowrap; transition: all 0.3s ease; margin-bottom: -2px; flex: 1; min-width: 60px; text-align: center; }
+        .tab-btn.active { border-bottom-color: #f97316; color: #f97316; }
+        .tab-content { display: none; overflow-x: hidden; max-width: 100%; }
+        .tab-content.active { display: block !important; }
+        button.btn-primary { width: 100%; padding: 10px; background: linear-gradient(135deg, #f97316 0%, #ea580c 100%); color: white; border: none; border-radius: 6px; font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.3s ease; margin-top: 12px; }
+        button.btn-primary:hover { transform: scale(1.02); box-shadow: 0 4px 12px rgba(249, 115, 22, 0.3); }
+        .btn-secondary { width: 100%; padding: 10px; background: #fed7aa; color: #7c2d12; border: 2px solid #f97316; border-radius: 6px; font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.3s ease; margin-top: auto; }
+        .btn-secondary:hover { background: #fecaca; }
+        .results { background: #fef3c7; border-left: 4px solid #f97316; padding: 10px; border-radius: 6px; margin-top: 10px; word-wrap: break-word; overflow-x: hidden; max-width: 100%; }
+        .result-item { margin-bottom: 6px; padding-bottom: 6px; border-bottom: 1px solid #fed7aa; }
+        .result-item:last-child { margin-bottom: 0; padding-bottom: 0; border-bottom: none; }
+        .result-label { font-size: 10px; color: #92400e; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
+        .result-value { font-size: 14px; font-weight: 700; color: #7c2d12; font-variant-numeric: tabular-nums; word-break: break-word; overflow-x: hidden; }
+        .error { background: #fee2e2; color: #991b1b; padding: 10px; border-radius: 6px; font-size: 12px; margin-top: 10px; border-left: 4px solid #dc2626; max-width: 100%; overflow-x: hidden; }
+        .screen-title { font-size: 18px; font-weight: 700; color: #7c2d12; margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
+        .screen-title i { font-size: 20px; color: #f97316; }
+        .back-btn { background: #fed7aa; border: 2px solid #f97316; color: #7c2d12; padding: 5px 8px; border-radius: 4px; cursor: pointer; font-weight: 600; font-size: 11px; margin-bottom: 10px; display: flex; align-items: center; gap: 3px; width: fit-content; transition: all 0.3s ease; flex-shrink: 0; }
+        .back-btn:hover { background: #fecaca; }
+        .calculator-panel { display: flex; flex-direction: column; max-width: 100%; width: 100%; overflow: hidden; }
+        .options-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px; }
     </style>
 </head>
 <body>
@@ -400,9 +61,7 @@
             <p>Field Calculations — NAD83 Grid Bearing</p>
             <div class="unit-badge" id="unitDisplay">Unit: --</div>
         </header>
-        
-        <!-- Unit Selection Screen -->
-        <div id="unitScreen" class="screen active">
+        <div id="unitScreen" class="active">
             <div style="flex: 1; display: flex; flex-direction: column; justify-content: center;">
                 <h2 style="font-size: 18px; color: #7c2d12; margin-bottom: 8px;">Select Unit System</h2>
                 <p style="color: #92400e; margin-bottom: 15px; font-size: 13px;">Choose your primary unit:</p>
@@ -416,213 +75,152 @@
                 <p style="color: #92400e; margin-top: 15px; font-size: 11px; text-align: center;">Change later via converter</p>
             </div>
         </div>
-        
-        <!-- Calculator Menu Screen -->
-        <div id="calculatorScreen" class="screen">
+        <div id="calculatorScreen">
             <h2 style="font-size: 18px; color: #7c2d12; margin-bottom: 12px;">📊 Calculations</h2>
             <div class="menu">
-                <button class="menu-btn" onclick="openCalculator('slope')">
-                    <span>Slope Calculation</span>
-                    <i data-icon="lucide:trending-up"></i>
-                </button>
-                <button class="menu-btn" onclick="openCalculator('circle')">
-                    <span>Circle Center</span>
-                    <i data-icon="lucide:circle"></i>
-                </button>
-                <button class="menu-btn" onclick="openCalculator('pointline')">
-                    <span>Point to Line Distance</span>
-                    <i data-icon="lucide:arrow-right"></i>
-                </button>
-                <button class="menu-btn" onclick="openCalculator('conversion')">
-                    <span>Unit Conversion</span>
-                    <i data-icon="lucide:repeat-2"></i>
-                </button>
-                <button class="menu-btn" onclick="openCalculator('circledist')">
-                    <span>Circle Distance</span>
-                    <i data-icon="lucide:target"></i>
-                </button>
+                <button class="menu-btn" onclick="openCalculator('slope')"><span>Slope Calculation</span><i data-icon="lucide:trending-up"></i></button>
+                <button class="menu-btn" onclick="openCalculator('circle')"><span>Circle Center</span><i data-icon="lucide:circle"></i></button>
+                <button class="menu-btn" onclick="openCalculator('pointline')"><span>Point to Line Distance</span><i data-icon="lucide:arrow-right"></i></button>
+                <button class="menu-btn" onclick="openCalculator('conversion')"><span>Unit Conversion</span><i data-icon="lucide:repeat-2"></i></button>
+                <button class="menu-btn" onclick="openCalculator('circledist')"><span>Circle Distance</span><i data-icon="lucide:target"></i></button>
             </div>
             <button class="btn-secondary" onclick="changeUnit()">Change Unit System</button>
         </div>
-        
-        <!-- Individual Calculator Screens -->
-        <div id="resultsScreen" class="screen">
-            <!-- SLOPE CALCULATOR -->
+        <div id="resultsScreen">
             <div id="slope-calc" class="calculator-panel">
                 <button class="back-btn" onclick="backToMenu()"><i data-icon="lucide:arrow-left"></i> Back</button>
                 <div class="screen-title"><i data-icon="lucide:trending-up"></i> Slope</div>
-                
+                <div class="options-row">
+                    <div class="form-group"><label>Output Unit</label><select id="slope-output-unit"><option value="meters">Meters</option><option value="feet">Feet</option><option value="cm">Centimeters</option><option value="mm">Millimeters</option><option value="inches">Inches</option></select></div>
+                    <div class="form-group"><label>Angle</label><select id="slope-angle-type"><option value="horizontal">Horizontal</option><option value="vertical">Vertical</option></select></div>
+                </div>
                 <div class="tabs">
                     <button class="tab-btn active" onclick="switchTab('slope', 'twopoints')">2Pts</button>
                     <button class="tab-btn" onclick="switchTab('slope', 'distances')">Dist</button>
                     <button class="tab-btn" onclick="switchTab('slope', 'threepoints')">3Pts</button>
                 </div>
-                
                 <div id="slope-twopoints" class="tab-content active">
-                    <div class="form-group"><label>P1 East</label><input type="number" id="slope-p1e" placeholder="0.00" step="0.01"></div>
-                    <div class="form-group"><label>P1 North</label><input type="number" id="slope-p1n" placeholder="0.00" step="0.01"></div>
-                    <div class="form-group"><label>P1 Z</label><input type="number" id="slope-p1z" placeholder="0.00" step="0.01"></div>
-                    <div class="form-group"><label>P2 East</label><input type="number" id="slope-p2e" placeholder="0.00" step="0.01"></div>
-                    <div class="form-group"><label>P2 North</label><input type="number" id="slope-p2n" placeholder="0.00" step="0.01"></div>
-                    <div class="form-group"><label>P2 Z</label><input type="number" id="slope-p2z" placeholder="0.00" step="0.01"></div>
+                    <div class="form-group"><label>P1 East</label><input type="number" id="slope-p1e" placeholder="0.00" step="0.0001"></div>
+                    <div class="form-group"><label>P1 North</label><input type="number" id="slope-p1n" placeholder="0.00" step="0.0001"></div>
+                    <div class="form-group"><label>P1 Z</label><input type="number" id="slope-p1z" placeholder="0.00" step="0.0001"></div>
+                    <div class="form-group"><label>P2 East</label><input type="number" id="slope-p2e" placeholder="0.00" step="0.0001"></div>
+                    <div class="form-group"><label>P2 North</label><input type="number" id="slope-p2n" placeholder="0.00" step="0.0001"></div>
+                    <div class="form-group"><label>P2 Z</label><input type="number" id="slope-p2z" placeholder="0.00" step="0.0001"></div>
                     <button class="btn-primary" onclick="calculateSlope('twopoints')">Calculate</button>
                 </div>
-                
                 <div id="slope-distances" class="tab-content">
-                    <div class="form-group"><label>Horizontal</label><input type="number" id="slope-horiz" placeholder="0.00" step="0.01"></div>
-                    <div class="form-group"><label>Vertical</label><input type="number" id="slope-vert" placeholder="0.00" step="0.01"></div>
+                    <div class="form-group"><label>Horizontal</label><input type="number" id="slope-horiz" placeholder="0.00" step="0.0001"></div>
+                    <div class="form-group"><label>Vertical</label><input type="number" id="slope-vert" placeholder="0.00" step="0.0001"></div>
                     <button class="btn-primary" onclick="calculateSlope('distances')">Calculate</button>
                 </div>
-                
                 <div id="slope-threepoints" class="tab-content">
-                    <div class="form-group"><label>P1 East</label><input type="number" id="slope3-p1e" placeholder="0.00" step="0.01"></div>
-                    <div class="form-group"><label>P1 North</label><input type="number" id="slope3-p1n" placeholder="0.00" step="0.01"></div>
-                    <div class="form-group"><label>P2 East (V)</label><input type="number" id="slope3-p2e" placeholder="0.00" step="0.01"></div>
-                    <div class="form-group"><label>P2 North (V)</label><input type="number" id="slope3-p2n" placeholder="0.00" step="0.01"></div>
-                    <div class="form-group"><label>P3 East</label><input type="number" id="slope3-p3e" placeholder="0.00" step="0.01"></div>
-                    <div class="form-group"><label>P3 North</label><input type="number" id="slope3-p3n" placeholder="0.00" step="0.01"></div>
+                    <div class="form-group"><label>P1 East</label><input type="number" id="slope3-p1e" placeholder="0.00" step="0.0001"></div>
+                    <div class="form-group"><label>P1 North</label><input type="number" id="slope3-p1n" placeholder="0.00" step="0.0001"></div>
+                    <div class="form-group"><label>P2 East (V)</label><input type="number" id="slope3-p2e" placeholder="0.00" step="0.0001"></div>
+                    <div class="form-group"><label>P2 North (V)</label><input type="number" id="slope3-p2n" placeholder="0.00" step="0.0001"></div>
+                    <div class="form-group"><label>P3 East</label><input type="number" id="slope3-p3e" placeholder="0.00" step="0.0001"></div>
+                    <div class="form-group"><label>P3 North</label><input type="number" id="slope3-p3n" placeholder="0.00" step="0.0001"></div>
                     <button class="btn-primary" onclick="calculateSlope('threepoints')">Calculate</button>
                 </div>
-                
                 <div id="slope-results" class="results" style="display:none;"></div>
             </div>
-            
-            <!-- CIRCLE CENTER CALCULATOR -->
             <div id="circle-calc" class="calculator-panel" style="display:none;">
                 <button class="back-btn" onclick="backToMenu()"><i data-icon="lucide:arrow-left"></i> Back</button>
                 <div class="screen-title"><i data-icon="lucide:circle"></i> Circle</div>
-                
+                <div class="form-group"><label>Output Unit</label><select id="circle-output-unit"><option value="meters">Meters</option><option value="feet">Feet</option><option value="cm">Centimeters</option><option value="mm">Millimeters</option><option value="inches">Inches</option></select></div>
                 <div class="tabs">
                     <button class="tab-btn active" onclick="switchTab('circle', 'threepoints')">3Pts</button>
                     <button class="tab-btn" onclick="switchTab('circle', 'twopoints')">2Pts+R</button>
                 </div>
-                
                 <div id="circle-threepoints" class="tab-content active">
-                    <div class="form-group"><label>P1 East</label><input type="number" id="circ-p1e" placeholder="0.00" step="0.01"></div>
-                    <div class="form-group"><label>P1 North</label><input type="number" id="circ-p1n" placeholder="0.00" step="0.01"></div>
-                    <div class="form-group"><label>P2 East</label><input type="number" id="circ-p2e" placeholder="0.00" step="0.01"></div>
-                    <div class="form-group"><label>P2 North</label><input type="number" id="circ-p2n" placeholder="0.00" step="0.01"></div>
-                    <div class="form-group"><label>P3 East</label><input type="number" id="circ-p3e" placeholder="0.00" step="0.01"></div>
-                    <div class="form-group"><label>P3 North</label><input type="number" id="circ-p3n" placeholder="0.00" step="0.01"></div>
+                    <div class="form-group"><label>P1 East</label><input type="number" id="circ-p1e" placeholder="0.00" step="0.0001"></div>
+                    <div class="form-group"><label>P1 North</label><input type="number" id="circ-p1n" placeholder="0.00" step="0.0001"></div>
+                    <div class="form-group"><label>P2 East</label><input type="number" id="circ-p2e" placeholder="0.00" step="0.0001"></div>
+                    <div class="form-group"><label>P2 North</label><input type="number" id="circ-p2n" placeholder="0.00" step="0.0001"></div>
+                    <div class="form-group"><label>P3 East</label><input type="number" id="circ-p3e" placeholder="0.00" step="0.0001"></div>
+                    <div class="form-group"><label>P3 North</label><input type="number" id="circ-p3n" placeholder="0.00" step="0.0001"></div>
                     <button class="btn-primary" onclick="calculateCircle('threepoints')">Calculate</button>
                 </div>
-                
                 <div id="circle-twopoints" class="tab-content">
-                    <div class="form-group"><label>P1 East</label><input type="number" id="circ2-p1e" placeholder="0.00" step="0.01"></div>
-                    <div class="form-group"><label>P1 North</label><input type="number" id="circ2-p1n" placeholder="0.00" step="0.01"></div>
-                    <div class="form-group"><label>P2 East</label><input type="number" id="circ2-p2e" placeholder="0.00" step="0.01"></div>
-                    <div class="form-group"><label>P2 North</label><input type="number" id="circ2-p2n" placeholder="0.00" step="0.01"></div>
-                    <div class="form-group"><label>Radius</label><input type="number" id="circ2-radius" placeholder="0.00" step="0.01"></div>
+                    <div class="form-group"><label>P1 East</label><input type="number" id="circ2-p1e" placeholder="0.00" step="0.0001"></div>
+                    <div class="form-group"><label>P1 North</label><input type="number" id="circ2-p1n" placeholder="0.00" step="0.0001"></div>
+                    <div class="form-group"><label>P2 East</label><input type="number" id="circ2-p2e" placeholder="0.00" step="0.0001"></div>
+                    <div class="form-group"><label>P2 North</label><input type="number" id="circ2-p2n" placeholder="0.00" step="0.0001"></div>
+                    <div class="form-group"><label>Radius</label><input type="number" id="circ2-radius" placeholder="0.00" step="0.0001"></div>
                     <button class="btn-primary" onclick="calculateCircle('twopoints')">Calculate</button>
                 </div>
-                
                 <div id="circle-results" class="results" style="display:none;"></div>
             </div>
-            
-            <!-- POINT TO LINE CALCULATOR -->
             <div id="pointline-calc" class="calculator-panel" style="display:none;">
                 <button class="back-btn" onclick="backToMenu()"><i data-icon="lucide:arrow-left"></i> Back</button>
                 <div class="screen-title"><i data-icon="lucide:arrow-right"></i> Point-Line</div>
-                
+                <div class="form-group"><label>Output Unit</label><select id="pointline-output-unit"><option value="meters">Meters</option><option value="feet">Feet</option><option value="cm">Centimeters</option><option value="mm">Millimeters</option><option value="inches">Inches</option></select></div>
                 <div class="tabs">
                     <button class="tab-btn active" onclick="switchTab('pointline', '2d')">2D</button>
                     <button class="tab-btn" onclick="switchTab('pointline', '3d')">3D</button>
                 </div>
-                
                 <div id="pointline-2d" class="tab-content active">
-                    <div class="form-group"><label>L1 East</label><input type="number" id="pl2d-l1e" placeholder="0.00" step="0.01"></div>
-                    <div class="form-group"><label>L1 North</label><input type="number" id="pl2d-l1n" placeholder="0.00" step="0.01"></div>
-                    <div class="form-group"><label>L2 East</label><input type="number" id="pl2d-l2e" placeholder="0.00" step="0.01"></div>
-                    <div class="form-group"><label>L2 North</label><input type="number" id="pl2d-l2n" placeholder="0.00" step="0.01"></div>
-                    <div class="form-group"><label>P East</label><input type="number" id="pl2d-pe" placeholder="0.00" step="0.01"></div>
-                    <div class="form-group"><label>P North</label><input type="number" id="pl2d-pn" placeholder="0.00" step="0.01"></div>
+                    <div class="form-group"><label>L1 East</label><input type="number" id="pl2d-l1e" placeholder="0.00" step="0.0001"></div>
+                    <div class="form-group"><label>L1 North</label><input type="number" id="pl2d-l1n" placeholder="0.00" step="0.0001"></div>
+                    <div class="form-group"><label>L2 East</label><input type="number" id="pl2d-l2e" placeholder="0.00" step="0.0001"></div>
+                    <div class="form-group"><label>L2 North</label><input type="number" id="pl2d-l2n" placeholder="0.00" step="0.0001"></div>
+                    <div class="form-group"><label>P East</label><input type="number" id="pl2d-pe" placeholder="0.00" step="0.0001"></div>
+                    <div class="form-group"><label>P North</label><input type="number" id="pl2d-pn" placeholder="0.00" step="0.0001"></div>
                     <button class="btn-primary" onclick="calculatePointToLine('2d')">Calculate</button>
                 </div>
-                
                 <div id="pointline-3d" class="tab-content">
-                    <div class="form-group"><label>L1 East</label><input type="number" id="pl3d-l1e" placeholder="0.00" step="0.01"></div>
-                    <div class="form-group"><label>L1 North</label><input type="number" id="pl3d-l1n" placeholder="0.00" step="0.01"></div>
-                    <div class="form-group"><label>L1 Z</label><input type="number" id="pl3d-l1z" placeholder="0.00" step="0.01"></div>
-                    <div class="form-group"><label>L2 East</label><input type="number" id="pl3d-l2e" placeholder="0.00" step="0.01"></div>
-                    <div class="form-group"><label>L2 North</label><input type="number" id="pl3d-l2n" placeholder="0.00" step="0.01"></div>
-                    <div class="form-group"><label>L2 Z</label><input type="number" id="pl3d-l2z" placeholder="0.00" step="0.01"></div>
-                    <div class="form-group"><label>P East</label><input type="number" id="pl3d-pe" placeholder="0.00" step="0.01"></div>
-                    <div class="form-group"><label>P North</label><input type="number" id="pl3d-pn" placeholder="0.00" step="0.01"></div>
-                    <div class="form-group"><label>P Z</label><input type="number" id="pl3d-pz" placeholder="0.00" step="0.01"></div>
+                    <div class="form-group"><label>L1 East</label><input type="number" id="pl3d-l1e" placeholder="0.00" step="0.0001"></div>
+                    <div class="form-group"><label>L1 North</label><input type="number" id="pl3d-l1n" placeholder="0.00" step="0.0001"></div>
+                    <div class="form-group"><label>L1 Z</label><input type="number" id="pl3d-l1z" placeholder="0.00" step="0.0001"></div>
+                    <div class="form-group"><label>L2 East</label><input type="number" id="pl3d-l2e" placeholder="0.00" step="0.0001"></div>
+                    <div class="form-group"><label>L2 North</label><input type="number" id="pl3d-l2n" placeholder="0.00" step="0.0001"></div>
+                    <div class="form-group"><label>L2 Z</label><input type="number" id="pl3d-l2z" placeholder="0.00" step="0.0001"></div>
+                    <div class="form-group"><label>P East</label><input type="number" id="pl3d-pe" placeholder="0.00" step="0.0001"></div>
+                    <div class="form-group"><label>P North</label><input type="number" id="pl3d-pn" placeholder="0.00" step="0.0001"></div>
+                    <div class="form-group"><label>P Z</label><input type="number" id="pl3d-pz" placeholder="0.00" step="0.0001"></div>
                     <button class="btn-primary" onclick="calculatePointToLine('3d')">Calculate</button>
                 </div>
-                
                 <div id="pointline-results" class="results" style="display:none;"></div>
             </div>
-            
-            <!-- UNIT CONVERSION CALCULATOR -->
             <div id="conversion-calc" class="calculator-panel" style="display:none;">
                 <button class="back-btn" onclick="backToMenu()"><i data-icon="lucide:arrow-left"></i> Back</button>
                 <div class="screen-title"><i data-icon="lucide:repeat-2"></i> Convert</div>
-                
-                <div class="form-group">
-                    <label>From</label>
-                    <select id="conv-from">
-                        <option value="meters">Meters</option>
-                        <option value="feet">Feet</option>
-                        <option value="cm">Centimeters</option>
-                        <option value="mm">Millimeters</option>
-                        <option value="inches">Inches</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label>To</label>
-                    <select id="conv-to">
-                        <option value="meters">Meters</option>
-                        <option value="feet">Feet</option>
-                        <option value="cm">Centimeters</option>
-                        <option value="mm">Millimeters</option>
-                        <option value="inches" selected>Inches</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label>Value</label>
-                    <input type="number" id="conv-value" placeholder="0.00" step="0.01">
-                </div>
+                <div class="form-group"><label>From</label><select id="conv-from"><option value="meters">Meters</option><option value="feet">Feet</option><option value="cm">Centimeters</option><option value="mm">Millimeters</option><option value="inches">Inches</option></select></div>
+                <div class="form-group"><label>To</label><select id="conv-to"><option value="meters">Meters</option><option value="feet">Feet</option><option value="cm">Centimeters</option><option value="mm">Millimeters</option><option value="inches" selected>Inches</option></select></div>
+                <div class="form-group"><label>Value</label><input type="number" id="conv-value" placeholder="0.00" step="0.0001"></div>
                 <button class="btn-primary" onclick="convertUnits()">Convert</button>
                 <div id="conversion-results" class="results" style="display:none;"></div>
             </div>
-            
-            <!-- CIRCLE DISTANCE CALCULATOR -->
             <div id="circledist-calc" class="calculator-panel" style="display:none;">
                 <button class="back-btn" onclick="backToMenu()"><i data-icon="lucide:arrow-left"></i> Back</button>
                 <div class="screen-title"><i data-icon="lucide:target"></i> Circle-Dist</div>
-                
+                <div class="form-group"><label>Output Unit</label><select id="circledist-output-unit"><option value="meters">Meters</option><option value="feet">Feet</option><option value="cm">Centimeters</option><option value="mm">Millimeters</option><option value="inches">Inches</option></select></div>
                 <div class="tabs">
                     <button class="tab-btn active" onclick="switchTab('circledist', 'pointdist')">Point</button>
                     <button class="tab-btn" onclick="switchTab('circledist', 'linedist')">Line</button>
                 </div>
-                
                 <div id="circledist-pointdist" class="tab-content active">
-                    <div class="form-group"><label>C East</label><input type="number" id="cd-ce" placeholder="0.00" step="0.01"></div>
-                    <div class="form-group"><label>C North</label><input type="number" id="cd-cn" placeholder="0.00" step="0.01"></div>
-                    <div class="form-group"><label>Radius</label><input type="number" id="cd-r" placeholder="0.00" step="0.01"></div>
-                    <div class="form-group"><label>P East</label><input type="number" id="cd-pe" placeholder="0.00" step="0.01"></div>
-                    <div class="form-group"><label>P North</label><input type="number" id="cd-pn" placeholder="0.00" step="0.01"></div>
+                    <div class="form-group"><label>C East</label><input type="number" id="cd-ce" placeholder="0.00" step="0.0001"></div>
+                    <div class="form-group"><label>C North</label><input type="number" id="cd-cn" placeholder="0.00" step="0.0001"></div>
+                    <div class="form-group"><label>Radius</label><input type="number" id="cd-r" placeholder="0.00" step="0.0001"></div>
+                    <div class="form-group"><label>P East</label><input type="number" id="cd-pe" placeholder="0.00" step="0.0001"></div>
+                    <div class="form-group"><label>P North</label><input type="number" id="cd-pn" placeholder="0.00" step="0.0001"></div>
                     <button class="btn-primary" onclick="calculateCircleDistance('point')">Calculate</button>
                 </div>
-                
                 <div id="circledist-linedist" class="tab-content">
-                    <div class="form-group"><label>C East</label><input type="number" id="cdl-ce" placeholder="0.00" step="0.01"></div>
-                    <div class="form-group"><label>C North</label><input type="number" id="cdl-cn" placeholder="0.00" step="0.01"></div>
-                    <div class="form-group"><label>Radius</label><input type="number" id="cdl-r" placeholder="0.00" step="0.01"></div>
-                    <div class="form-group"><label>L1 East</label><input type="number" id="cdl-l1e" placeholder="0.00" step="0.01"></div>
-                    <div class="form-group"><label>L1 North</label><input type="number" id="cdl-l1n" placeholder="0.00" step="0.01"></div>
-                    <div class="form-group"><label>L2 East</label><input type="number" id="cdl-l2e" placeholder="0.00" step="0.01"></div>
-                    <div class="form-group"><label>L2 North</label><input type="number" id="cdl-l2n" placeholder="0.00" step="0.01"></div>
+                    <div class="form-group"><label>C East</label><input type="number" id="cdl-ce" placeholder="0.00" step="0.0001"></div>
+                    <div class="form-group"><label>C North</label><input type="number" id="cdl-cn" placeholder="0.00" step="0.0001"></div>
+                    <div class="form-group"><label>Radius</label><input type="number" id="cdl-r" placeholder="0.00" step="0.0001"></div>
+                    <div class="form-group"><label>L1 East</label><input type="number" id="cdl-l1e" placeholder="0.00" step="0.0001"></div>
+                    <div class="form-group"><label>L1 North</label><input type="number" id="cdl-l1n" placeholder="0.00" step="0.0001"></div>
+                    <div class="form-group"><label>L2 East</label><input type="number" id="cdl-l2e" placeholder="0.00" step="0.0001"></div>
+                    <div class="form-group"><label>L2 North</label><input type="number" id="cdl-l2n" placeholder="0.00" step="0.0001"></div>
                     <button class="btn-primary" onclick="calculateCircleDistance('line')">Calculate</button>
                 </div>
-                
                 <div id="circledist-results" class="results" style="display:none;"></div>
             </div>
         </div>
     </div>
-    
-    <script src="/app.js"></script>
+    <script src="./app.js"></script>
 </body>
 </html>
