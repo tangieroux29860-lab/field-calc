@@ -1,11 +1,11 @@
 // Global state
 let currentUnit = null;
 const unitConversions = {
-    'meters': { 'meters': 1, 'feet': 3.28084, 'cm': 100, 'mm': 1000, 'inches': 39.3701 },
-    'feet': { 'meters': 0.3048, 'feet': 1, 'cm': 30.48, 'mm': 304.8, 'inches': 12 },
-    'cm': { 'meters': 0.01, 'feet': 0.0328084, 'cm': 1, 'mm': 10, 'inches': 0.393701 },
+    'meters': { 'meters': 1, 'feet': 3.2808399, 'cm': 100, 'mm': 1000, 'inches': 39.3701 },
+    'feet': { 'meters': 0.30480061, 'feet': 1, 'cm': 30.480061, 'mm': 304.80061, 'inches': 12 },
+    'cm': { 'meters': 0.01, 'feet': 0.03280839, 'cm': 1, 'mm': 10, 'inches': 0.393701 },
     'mm': { 'meters': 0.001, 'feet': 0.00328084, 'cm': 0.1, 'mm': 1, 'inches': 0.0393701 },
-    'inches': { 'meters': 0.0254, 'feet': 0.0833333, 'cm': 2.54, 'mm': 25.4, 'inches': 1 }
+    'inches': { 'meters': 0.0254, 'feet': 0.083333, 'cm': 2.54, 'mm': 25.4, 'inches': 1 }
 };
 
 const unitLabels = {
@@ -41,34 +41,37 @@ function openCalculator(type) {
     document.getElementById('calculatorScreen').classList.remove('active');
     document.getElementById('resultsScreen').classList.add('active');
     
-    // Hide all calculators
     document.querySelectorAll('.calculator-panel').forEach(p => p.style.display = 'none');
-    
-    // Show selected calculator
     document.getElementById(type + '-calc').style.display = 'flex';
 }
 
 function backToMenu() {
     document.getElementById('resultsScreen').classList.remove('active');
     document.getElementById('calculatorScreen').classList.add('active');
-    // Clear results
     document.querySelectorAll('[id$="-results"]').forEach(r => r.style.display = 'none');
 }
 
 function switchTab(calc, tab) {
-    // Remove active from all tabs
     document.querySelectorAll(`#${calc}-calc .tab-btn`).forEach(btn => btn.classList.remove('active'));
     document.querySelectorAll(`#${calc}-calc .tab-content`).forEach(content => content.classList.remove('active'));
     
-    // Add active to clicked tab
     event.target.classList.add('active');
     document.getElementById(`${calc}-${tab}`).classList.add('active');
+}
+
+function convertToUnit(value, outputUnit) {
+    if (!currentUnit || !outputUnit) return value;
+    const factor = unitConversions[currentUnit][outputUnit];
+    return value * factor;
 }
 
 // SLOPE CALCULATIONS
 function calculateSlope(type) {
     let result = {};
     let error = null;
+    
+    const outputUnit = document.getElementById('slope-output-unit')?.value || currentUnit;
+    const angleType = document.getElementById('slope-angle-type')?.value || 'horizontal';
     
     try {
         if (type === 'twopoints') {
@@ -88,15 +91,27 @@ function calculateSlope(type) {
                 const horizontalDist = Math.sqrt(deltaE * deltaE + deltaN * deltaN);
                 const slope3d = Math.sqrt(horizontalDist * horizontalDist + deltaZ * deltaZ);
                 const slopePercent = (Math.abs(deltaZ) / (horizontalDist > 0 ? horizontalDist : 1)) * 100;
-                const slopeAngle = Math.atan2(Math.abs(deltaZ), horizontalDist > 0 ? horizontalDist : 0.0001) * (180 / Math.PI);
+                
+                let slopeAngle;
+                if (angleType === 'vertical') {
+                    // Angle from vertical (90° - angle from horizontal)
+                    const angleHoriz = Math.atan2(Math.abs(deltaZ), horizontalDist > 0 ? horizontalDist : 0.0001) * (180 / Math.PI);
+                    slopeAngle = 90 - angleHoriz;
+                } else {
+                    // Angle from horizontal (standard)
+                    slopeAngle = Math.atan2(Math.abs(deltaZ), horizontalDist > 0 ? horizontalDist : 0.0001) * (180 / Math.PI);
+                }
+                
+                const hDist = convertToUnit(horizontalDist, outputUnit);
+                const vDist = convertToUnit(Math.abs(deltaZ), outputUnit);
+                const s3d = convertToUnit(slope3d, outputUnit);
                 
                 result = {
-                    'Horizontal Distance': horizontalDist.toFixed(4),
-                    'Vertical Distance (Z)': deltaZ.toFixed(4),
-                    '3D Distance': slope3d.toFixed(4),
-                    'Slope Angle': slopeAngle.toFixed(2) + '°',
-                    'Slope Percent': slopePercent.toFixed(2) + '%',
-                    'Unit': unitLabels[currentUnit]
+                    'Horizontal Distance': hDist.toFixed(4) + ' ' + unitLabels[outputUnit],
+                    'Vertical Distance': vDist.toFixed(4) + ' ' + unitLabels[outputUnit],
+                    '3D Distance': s3d.toFixed(4) + ' ' + unitLabels[outputUnit],
+                    'Slope Angle': slopeAngle.toFixed(4) + '°',
+                    'Slope Percent': slopePercent.toFixed(4) + '%'
                 };
             }
         } else if (type === 'distances') {
@@ -108,15 +123,25 @@ function calculateSlope(type) {
             } else {
                 const slope3d = Math.sqrt(horiz * horiz + vert * vert);
                 const slopePercent = (Math.abs(vert) / (horiz > 0 ? horiz : 1)) * 100;
-                const slopeAngle = Math.atan2(Math.abs(vert), horiz > 0 ? horiz : 0.0001) * (180 / Math.PI);
+                
+                let slopeAngle;
+                if (angleType === 'vertical') {
+                    const angleHoriz = Math.atan2(Math.abs(vert), horiz > 0 ? horiz : 0.0001) * (180 / Math.PI);
+                    slopeAngle = 90 - angleHoriz;
+                } else {
+                    slopeAngle = Math.atan2(Math.abs(vert), horiz > 0 ? horiz : 0.0001) * (180 / Math.PI);
+                }
+                
+                const hDist = convertToUnit(horiz, outputUnit);
+                const vDist = convertToUnit(Math.abs(vert), outputUnit);
+                const s3d = convertToUnit(slope3d, outputUnit);
                 
                 result = {
-                    'Horizontal Distance': horiz.toFixed(4),
-                    'Vertical Distance': vert.toFixed(4),
-                    '3D Distance': slope3d.toFixed(4),
-                    'Slope Angle': slopeAngle.toFixed(2) + '°',
-                    'Slope Percent': slopePercent.toFixed(2) + '%',
-                    'Unit': unitLabels[currentUnit]
+                    'Horizontal Distance': hDist.toFixed(4) + ' ' + unitLabels[outputUnit],
+                    'Vertical Distance': vDist.toFixed(4) + ' ' + unitLabels[outputUnit],
+                    '3D Distance': s3d.toFixed(4) + ' ' + unitLabels[outputUnit],
+                    'Slope Angle': slopeAngle.toFixed(4) + '°',
+                    'Slope Percent': slopePercent.toFixed(4) + '%'
                 };
             }
         } else if (type === 'threepoints') {
@@ -130,10 +155,8 @@ function calculateSlope(type) {
             if (isNaN(p1e) || isNaN(p1n) || isNaN(p2e) || isNaN(p2n) || isNaN(p3e) || isNaN(p3n)) {
                 error = 'Please fill all coordinate fields';
             } else {
-                // Vector from vertex to point 1
                 const v1e = p1e - p2e;
                 const v1n = p1n - p2n;
-                // Vector from vertex to point 3
                 const v2e = p3e - p2e;
                 const v2n = p3n - p2n;
                 
@@ -147,11 +170,13 @@ function calculateSlope(type) {
                     const cosAngle = dot / (mag1 * mag2);
                     const angle = Math.acos(Math.max(-1, Math.min(1, cosAngle))) * (180 / Math.PI);
                     
+                    const d1 = convertToUnit(mag1, outputUnit);
+                    const d2 = convertToUnit(mag2, outputUnit);
+                    
                     result = {
-                        'Angle between Points': angle.toFixed(2) + '°',
-                        'Distance P1 to Vertex': mag1.toFixed(4),
-                        'Distance P3 to Vertex': mag2.toFixed(4),
-                        'Unit': unitLabels[currentUnit]
+                        'Angle between Points': angle.toFixed(4) + '°',
+                        'Distance P1 to Vertex': d1.toFixed(4) + ' ' + unitLabels[outputUnit],
+                        'Distance P3 to Vertex': d2.toFixed(4) + ' ' + unitLabels[outputUnit]
                     };
                 }
             }
@@ -168,6 +193,8 @@ function calculateCircle(type) {
     let result = {};
     let error = null;
     
+    const outputUnit = document.getElementById('circle-output-unit')?.value || currentUnit;
+    
     try {
         if (type === 'threepoints') {
             const p1e = parseFloat(document.getElementById('circ-p1e').value);
@@ -180,7 +207,6 @@ function calculateCircle(type) {
             if (isNaN(p1e) || isNaN(p1n) || isNaN(p2e) || isNaN(p2n) || isNaN(p3e) || isNaN(p3n)) {
                 error = 'Please fill all coordinate fields';
             } else {
-                // Circle center from 3 points
                 const ax = p1e, ay = p1n;
                 const bx = p2e, by = p2n;
                 const cx = p3e, cy = p3n;
@@ -194,12 +220,12 @@ function calculateCircle(type) {
                     const uy = ((ax * ax + ay * ay) * (cx - bx) + (bx * bx + by * by) * (ax - cx) + (cx * cx + cy * cy) * (bx - ax)) / d;
                     
                     const radius = Math.sqrt((ax - ux) * (ax - ux) + (ay - uy) * (ay - uy));
+                    const radiusOut = convertToUnit(radius, outputUnit);
                     
                     result = {
                         'Center East': ux.toFixed(4),
                         'Center North': uy.toFixed(4),
-                        'Radius': radius.toFixed(4),
-                        'Unit': unitLabels[currentUnit]
+                        'Radius': radiusOut.toFixed(4) + ' ' + unitLabels[outputUnit]
                     };
                 }
             }
@@ -226,17 +252,16 @@ function calculateCircle(type) {
                     const px = (p2n - p1n) / d;
                     const py = (p1e - p2e) / d;
                     
-                    // Two possible centers
                     const c1e = midE + h * px;
                     const c1n = midN + h * py;
+                    const radiusOut = convertToUnit(radius, outputUnit);
                     
                     result = {
                         'Center 1 East': c1e.toFixed(4),
                         'Center 1 North': c1n.toFixed(4),
                         'Center 2 East': (midE - h * px).toFixed(4),
                         'Center 2 North': (midN - h * py).toFixed(4),
-                        'Radius': radius.toFixed(4),
-                        'Unit': unitLabels[currentUnit]
+                        'Radius': radiusOut.toFixed(4) + ' ' + unitLabels[outputUnit]
                     };
                 }
             }
@@ -252,6 +277,8 @@ function calculateCircle(type) {
 function calculatePointToLine(type) {
     let result = {};
     let error = null;
+    
+    const outputUnit = document.getElementById('pointline-output-unit')?.value || currentUnit;
     
     try {
         if (type === '2d') {
@@ -272,33 +299,30 @@ function calculatePointToLine(type) {
                 if (lineLengthSq < 1e-10) {
                     error = 'Line points must be different';
                 } else {
-                    // Project point onto line
                     const t = ((pe - l1e) * dx + (pn - l1n) * dy) / lineLengthSq;
                     const projE = l1e + t * dx;
                     const projN = l1n + t * dy;
                     
-                    // Perpendicular distance
                     const perpDist = Math.sqrt((pe - projE) * (pe - projE) + (pn - projN) * (pn - projN));
-                    
-                    // Along line distance
-                    const lineLength = Math.sqrt(lineLengthSq);
                     const alongDist = Math.sqrt((projE - l1e) * (projE - l1e) + (projN - l1n) * (projN - l1n));
                     
-                    // Line bearing (Grid North = 0°)
                     let bearing = Math.atan2(dx, dy) * (180 / Math.PI);
                     if (bearing < 0) bearing += 360;
                     
-                    // Delta E, N
-                    const deltaE = pe - l1e;
-                    const deltaN = pn - l1n;
+                    const deltaE = pe - projE;
+                    const deltaN = pn - projN;
+                    
+                    const perpDistOut = convertToUnit(perpDist, outputUnit);
+                    const alongDistOut = convertToUnit(alongDist, outputUnit);
+                    const deltaEOut = convertToUnit(deltaE, outputUnit);
+                    const deltaNOut = convertToUnit(deltaN, outputUnit);
                     
                     result = {
-                        'Perpendicular Distance': perpDist.toFixed(4),
-                        'Along Line Distance': alongDist.toFixed(4),
-                        'ΔE (East)': deltaE.toFixed(4),
-                        'ΔN (North)': deltaN.toFixed(4),
-                        'Line Bearing': bearing.toFixed(2) + '°',
-                        'Unit': unitLabels[currentUnit]
+                        'Perpendicular Distance': perpDistOut.toFixed(4) + ' ' + unitLabels[outputUnit],
+                        'Along Line Distance': alongDistOut.toFixed(4) + ' ' + unitLabels[outputUnit],
+                        'ΔE (from projection)': deltaEOut.toFixed(4) + ' ' + unitLabels[outputUnit],
+                        'ΔN (from projection)': deltaNOut.toFixed(4) + ' ' + unitLabels[outputUnit],
+                        'Line Bearing': bearing.toFixed(4) + '°'
                     };
                 }
             }
@@ -324,36 +348,34 @@ function calculatePointToLine(type) {
                 if (lineLengthSq < 1e-10) {
                     error = 'Line points must be different';
                 } else {
-                    // Project point onto line
                     const t = ((pe - l1e) * dx + (pn - l1n) * dy + (pz - l1z) * dz) / lineLengthSq;
                     const projE = l1e + t * dx;
                     const projN = l1n + t * dy;
                     const projZ = l1z + t * dz;
                     
-                    // Perpendicular distance
                     const perpDist = Math.sqrt((pe - projE) * (pe - projE) + (pn - projN) * (pn - projN) + (pz - projZ) * (pz - projZ));
-                    
-                    // Along line distance
                     const alongDist = Math.sqrt((projE - l1e) * (projE - l1e) + (projN - l1n) * (projN - l1n) + (projZ - l1z) * (projZ - l1z));
                     
-                    // Line bearing (Grid North = 0°, ignoring Z)
-                    const horizDist = Math.sqrt(dx * dx + dy * dy);
                     let bearing = Math.atan2(dx, dy) * (180 / Math.PI);
                     if (bearing < 0) bearing += 360;
                     
-                    // Delta E, N, Z
-                    const deltaE = pe - l1e;
-                    const deltaN = pn - l1n;
-                    const deltaZ = pz - l1z;
+                    const deltaE = pe - projE;
+                    const deltaN = pn - projN;
+                    const deltaZ = pz - projZ;
+                    
+                    const perpDistOut = convertToUnit(perpDist, outputUnit);
+                    const alongDistOut = convertToUnit(alongDist, outputUnit);
+                    const deltaEOut = convertToUnit(deltaE, outputUnit);
+                    const deltaNOut = convertToUnit(deltaN, outputUnit);
+                    const deltaZOut = convertToUnit(deltaZ, outputUnit);
                     
                     result = {
-                        'Perpendicular Distance': perpDist.toFixed(4),
-                        'Along Line Distance': alongDist.toFixed(4),
-                        'ΔE (East)': deltaE.toFixed(4),
-                        'ΔN (North)': deltaN.toFixed(4),
-                        'ΔZ (Elevation)': deltaZ.toFixed(4),
-                        'Line Bearing': bearing.toFixed(2) + '°',
-                        'Unit': unitLabels[currentUnit]
+                        'Perpendicular Distance': perpDistOut.toFixed(4) + ' ' + unitLabels[outputUnit],
+                        'Along Line Distance': alongDistOut.toFixed(4) + ' ' + unitLabels[outputUnit],
+                        'ΔE (from projection)': deltaEOut.toFixed(4) + ' ' + unitLabels[outputUnit],
+                        'ΔN (from projection)': deltaNOut.toFixed(4) + ' ' + unitLabels[outputUnit],
+                        'ΔZ (from projection)': deltaZOut.toFixed(4) + ' ' + unitLabels[outputUnit],
+                        'Line Bearing': bearing.toFixed(4) + '°'
                     };
                 }
             }
@@ -381,7 +403,7 @@ function convertUnits() {
         result = {
             'From': value.toFixed(4) + ' ' + unitLabels[fromUnit],
             'To': convertedValue.toFixed(4) + ' ' + unitLabels[toUnit],
-            'Conversion Factor': unitConversions[fromUnit][toUnit].toFixed(6)
+            'Conversion Factor': unitConversions[fromUnit][toUnit].toFixed(8)
         };
     }
     
@@ -392,6 +414,8 @@ function convertUnits() {
 function calculateCircleDistance(type) {
     let result = {};
     let error = null;
+    
+    const outputUnit = document.getElementById('circledist-output-unit')?.value || currentUnit;
     
     try {
         if (type === 'point') {
@@ -410,12 +434,15 @@ function calculateCircleDistance(type) {
                 const distToCircle = Math.abs(distToCenter - r);
                 const position = distToCenter < r ? 'Inside' : (distToCenter === r ? 'On' : 'Outside');
                 
+                const distOut = convertToUnit(distToCenter, outputUnit);
+                const distCircleOut = convertToUnit(distToCircle, outputUnit);
+                const radiusOut = convertToUnit(r, outputUnit);
+                
                 result = {
-                    'Distance to Center': distToCenter.toFixed(4),
-                    'Distance to Circle': distToCircle.toFixed(4),
+                    'Distance to Center': distOut.toFixed(4) + ' ' + unitLabels[outputUnit],
+                    'Distance to Circle': distCircleOut.toFixed(4) + ' ' + unitLabels[outputUnit],
                     'Position': position + ' circle',
-                    'Radius': r.toFixed(4),
-                    'Unit': unitLabels[currentUnit]
+                    'Radius': radiusOut.toFixed(4) + ' ' + unitLabels[outputUnit]
                 };
             }
         } else if (type === 'line') {
@@ -439,7 +466,6 @@ function calculateCircleDistance(type) {
                 if (lineLengthSq < 1e-10) {
                     error = 'Line points must be different';
                 } else {
-                    // Distance from circle center to line
                     const t = ((ce - l1e) * dx + (cn - l1n) * dy) / lineLengthSq;
                     const projE = l1e + t * dx;
                     const projN = l1n + t * dy;
@@ -447,12 +473,15 @@ function calculateCircleDistance(type) {
                     const distToCircle = Math.abs(distToLine - r);
                     const position = distToLine < r ? 'Intersects' : (distToLine === r ? 'Tangent to' : 'Outside');
                     
+                    const distOut = convertToUnit(distToLine, outputUnit);
+                    const distCircleOut = convertToUnit(distToCircle, outputUnit);
+                    const radiusOut = convertToUnit(r, outputUnit);
+                    
                     result = {
-                        'Distance Center to Line': distToLine.toFixed(4),
-                        'Distance Circle to Line': distToCircle.toFixed(4),
+                        'Distance Center to Line': distOut.toFixed(4) + ' ' + unitLabels[outputUnit],
+                        'Distance Circle to Line': distCircleOut.toFixed(4) + ' ' + unitLabels[outputUnit],
                         'Position': position,
-                        'Radius': r.toFixed(4),
-                        'Unit': unitLabels[currentUnit]
+                        'Radius': radiusOut.toFixed(4) + ' ' + unitLabels[outputUnit]
                     };
                 }
             }
@@ -484,5 +513,5 @@ function displayResults(calcType, resultObj, error) {
 
 // Install as PWA
 if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('/sw.js').catch(() => {});
+    navigator.serviceWorker.register('./sw.js').catch(() => {});
 }
