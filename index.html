@@ -6,8 +6,8 @@
     <meta name="description" content="Land Surveyor Field Calculator - ENZ coordinates, grid bearing NAD83">
     <meta name="theme-color" content="#f97316">
     <title>Land Surveyor Calc</title>
-    <script src="./icons.js"></script>
-    <link rel="manifest" href="./manifest.json">
+    <script src="/icons.js"></script>
+    <link rel="manifest" href="/manifest.json">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         html, body { height: 100%; width: 100%; overflow: hidden; }
@@ -185,10 +185,21 @@
             <div id="conversion-calc" class="calculator-panel" style="display:none;">
                 <button class="back-btn" onclick="backToMenu()"><i data-icon="lucide:arrow-left"></i> Back</button>
                 <div class="screen-title"><i data-icon="lucide:repeat-2"></i> Convert</div>
-                <div class="form-group"><label>From</label><select id="conv-from"><option value="meters">Meters</option><option value="feet">Feet</option><option value="cm">Centimeters</option><option value="mm">Millimeters</option><option value="inches">Inches</option></select></div>
-                <div class="form-group"><label>To</label><select id="conv-to"><option value="meters">Meters</option><option value="feet">Feet</option><option value="cm">Centimeters</option><option value="mm">Millimeters</option><option value="inches" selected>Inches</option></select></div>
-                <div class="form-group"><label>Value</label><input type="number" id="conv-value" placeholder="0.00" step="0.0001"></div>
-                <button class="btn-primary" onclick="convertUnits()">Convert</button>
+                <div class="tabs">
+                    <button class="tab-btn active" onclick="switchTab('conversion', 'standard')">Standard</button>
+                    <button class="tab-btn" onclick="switchTab('conversion', 'feetinch')">Feet-Inch</button>
+                </div>
+                <div id="conversion-standard" class="tab-content active">
+                    <div class="form-group"><label>From</label><select id="conv-from"><option value="meters">Meters</option><option value="feet">Feet</option><option value="cm">Centimeters</option><option value="mm">Millimeters</option><option value="inches">Inches</option></select></div>
+                    <div class="form-group"><label>To</label><select id="conv-to"><option value="meters">Meters</option><option value="feet">Feet</option><option value="cm">Centimeters</option><option value="mm">Millimeters</option><option value="inches" selected>Inches</option></select></div>
+                    <div class="form-group"><label>Value</label><input type="number" id="conv-value" placeholder="0.00" step="0.0001"></div>
+                    <button class="btn-primary" onclick="convertUnits()">Convert</button>
+                </div>
+                <div id="conversion-feetinch" class="tab-content">
+                    <div class="form-group"><label>From Unit</label><select id="conv-fi-from"><option value="meters">Meters</option><option value="feet" selected>Feet</option><option value="cm">Centimeters</option><option value="mm">Millimeters</option><option value="inches">Inches</option></select></div>
+                    <div class="form-group"><label>Value</label><input type="number" id="conv-fi-value" placeholder="0.00" step="0.0001"></div>
+                    <button class="btn-primary" onclick="convertFeetInch()">Convert to Feet-Inch</button>
+                </div>
                 <div id="conversion-results" class="results" style="display:none;"></div>
             </div>
             <div id="circledist-calc" class="calculator-panel" style="display:none;">
@@ -221,6 +232,6 @@
             </div>
         </div>
     </div>
-    <script src="./app.js"></script>
+    <script src="/app.js"></script>
 </body>
 </html>
