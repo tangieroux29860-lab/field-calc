@@ -31,16 +31,6 @@ function selectUnit(unit) {
     }, 300);
 }
 
-// Initialize unit button listeners
-document.addEventListener('DOMContentLoaded', () => {
-    document.querySelectorAll('.unit-btn').forEach(btn => {
-        btn.addEventListener('click', () => {
-            const unit = btn.dataset.unit;
-            selectUnit(unit);
-        });
-    });
-});
-
 function changeUnit() {
     document.getElementById('calculatorScreen').classList.remove('active');
     document.getElementById('resultsScreen').classList.remove('active');
@@ -571,16 +561,16 @@ if ('serviceWorker' in navigator) {
     navigator.serviceWorker.register('./sw.js').catch(() => {});
 }
 
-// Init unit buttons
-if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', () => {
-        document.querySelectorAll('.unit-btn').forEach(btn => {
-            btn.addEventListener('click', () => {
-                selectUnit(btn.dataset.unit);
-            });
+// Init unit buttons when DOM is ready
+document.addEventListener('DOMContentLoaded', () => {
+    document.querySelectorAll('.unit-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            selectUnit(btn.dataset.unit);
         });
     });
-} else {
+});
+
+if (document.readyState !== 'loading') {
     document.querySelectorAll('.unit-btn').forEach(btn => {
         btn.addEventListener('click', () => {
             selectUnit(btn.dataset.unit);
