@@ -410,6 +410,47 @@ function convertUnits() {
     displayResults('conversion', result, error);
 }
 
+function convertToFeetInch(decimalFeet) {
+    const feet = Math.floor(decimalFeet);
+    const remainingFeet = decimalFeet - feet;
+    const totalInches = remainingFeet * 12;
+    const inches = Math.floor(totalInches);
+    const remainingInches = totalInches - inches;
+    const thirtyseconds = Math.round(remainingInches * 32);
+    if (thirtyseconds === 32) {
+        return convertToFeetInch(feet + (inches + 1) / 12);
+    }
+    let numerator = thirtyseconds;
+    let denominator = 32;
+    if (numerator === 0) {
+        return feet + "' " + inches + '"';
+    }
+    const gcd = (a, b) => b === 0 ? a : gcd(b, a % b);
+    const divisor = gcd(numerator, denominator);
+    numerator /= divisor;
+    denominator /= divisor;
+    return feet + "' " + inches + " " + numerator + "/" + denominator + '"';
+}
+
+function convertFeetInch() {
+    const value = parseFloat(document.getElementById('conv-fi-value').value);
+    const fromUnit = document.getElementById('conv-fi-from').value;
+    let result = {};
+    let error = null;
+    if (isNaN(value)) {
+        error = 'Please enter a valid number';
+    } else {
+        const valueInFeet = value * unitConversions[fromUnit]['feet'];
+        const feetInchFormat = convertToFeetInch(valueInFeet);
+        result = {
+            'From': value.toFixed(4) + ' ' + unitLabels[fromUnit],
+            'To (Feet-Inch)': feetInchFormat,
+            'Decimal Feet': valueInFeet.toFixed(4) + ' ft'
+        };
+    }
+    displayResults('conversion', result, error);
+}
+
 // CIRCLE DISTANCE
 function calculateCircleDistance(type) {
     let result = {};
