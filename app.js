@@ -90,16 +90,19 @@ function calculateSlope(type) {
                 const deltaZ = p2z - p1z;
                 const horizontalDist = Math.sqrt(deltaE * deltaE + deltaN * deltaN);
                 const slope3d = Math.sqrt(horizontalDist * horizontalDist + deltaZ * deltaZ);
-                const slopePercent = (Math.abs(deltaZ) / (horizontalDist > 0 ? horizontalDist : 1)) * 100;
                 
-                let slopeAngle;
+                let slopePercent, slopeAngle;
                 if (angleType === 'vertical') {
                     // Angle from vertical (90° - angle from horizontal)
                     const angleHoriz = Math.atan2(Math.abs(deltaZ), horizontalDist > 0 ? horizontalDist : 0.0001) * (180 / Math.PI);
                     slopeAngle = 90 - angleHoriz;
+                    // Percentage from vertical: horizontal/vertical * 100
+                    slopePercent = (horizontalDist / (Math.abs(deltaZ) > 0 ? Math.abs(deltaZ) : 1)) * 100;
                 } else {
                     // Angle from horizontal (standard)
                     slopeAngle = Math.atan2(Math.abs(deltaZ), horizontalDist > 0 ? horizontalDist : 0.0001) * (180 / Math.PI);
+                    // Percentage from horizontal: vertical/horizontal * 100
+                    slopePercent = (Math.abs(deltaZ) / (horizontalDist > 0 ? horizontalDist : 1)) * 100;
                 }
                 
                 const hDist = convertToUnit(horizontalDist, outputUnit);
@@ -122,14 +125,17 @@ function calculateSlope(type) {
                 error = 'Please fill all distance fields';
             } else {
                 const slope3d = Math.sqrt(horiz * horiz + vert * vert);
-                const slopePercent = (Math.abs(vert) / (horiz > 0 ? horiz : 1)) * 100;
                 
-                let slopeAngle;
+                let slopePercent, slopeAngle;
                 if (angleType === 'vertical') {
                     const angleHoriz = Math.atan2(Math.abs(vert), horiz > 0 ? horiz : 0.0001) * (180 / Math.PI);
                     slopeAngle = 90 - angleHoriz;
+                    // Percentage from vertical: horizontal/vertical * 100
+                    slopePercent = (horiz / (Math.abs(vert) > 0 ? Math.abs(vert) : 1)) * 100;
                 } else {
                     slopeAngle = Math.atan2(Math.abs(vert), horiz > 0 ? horiz : 0.0001) * (180 / Math.PI);
+                    // Percentage from horizontal: vertical/horizontal * 100
+                    slopePercent = (Math.abs(vert) / (horiz > 0 ? horiz : 1)) * 100;
                 }
                 
                 const hDist = convertToUnit(horiz, outputUnit);
