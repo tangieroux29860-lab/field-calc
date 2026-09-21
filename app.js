@@ -18,14 +18,28 @@ const unitLabels = {
 
 function selectUnit(unit) {
     currentUnit = unit;
-    document.querySelectorAll('.unit-btn').forEach(btn => btn.classList.remove('selected'));
-    event.target.classList.add('selected');
+    document.querySelectorAll('.unit-btn').forEach(btn => {
+        btn.classList.remove('selected');
+        if (btn.dataset.unit === unit) {
+            btn.classList.add('selected');
+        }
+    });
     updateUnitDisplay();
     setTimeout(() => {
         document.getElementById('unitScreen').classList.remove('active');
         document.getElementById('calculatorScreen').classList.add('active');
     }, 300);
 }
+
+// Initialize unit button listeners
+document.addEventListener('DOMContentLoaded', () => {
+    document.querySelectorAll('.unit-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const unit = btn.dataset.unit;
+            selectUnit(unit);
+        });
+    });
+});
 
 function changeUnit() {
     document.getElementById('calculatorScreen').classList.remove('active');
@@ -555,4 +569,21 @@ function displayResults(calcType, resultObj, error) {
 // Install as PWA
 if ('serviceWorker' in navigator) {
     navigator.serviceWorker.register('./sw.js').catch(() => {});
+}
+
+// Init unit buttons
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', () => {
+        document.querySelectorAll('.unit-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                selectUnit(btn.dataset.unit);
+            });
+        });
+    });
+} else {
+    document.querySelectorAll('.unit-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            selectUnit(btn.dataset.unit);
+        });
+    });
 }
