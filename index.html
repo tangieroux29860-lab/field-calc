@@ -6,8 +6,8 @@
     <meta name="description" content="Land Surveyor Field Calculator - ENZ coordinates, grid bearing NAD83">
     <meta name="theme-color" content="#f97316">
     <title>Land Surveyor Calc</title>
-    <script src="/icons.js"></script>
-    <link rel="manifest" href="/manifest.json">
+    <script src="./icons.js"></script>
+    <link rel="manifest" href="./manifest.json">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         html, body { height: 100%; width: 100%; overflow: hidden; }
@@ -66,11 +66,11 @@
                 <h2 style="font-size: 18px; color: #7c2d12; margin-bottom: 8px;">Select Unit System</h2>
                 <p style="color: #92400e; margin-bottom: 15px; font-size: 13px;">Choose your primary unit:</p>
                 <div class="unit-selection">
-                    <button class="unit-btn" data-unit="meters">📋 Meters</button>
-                    <button class="unit-btn" data-unit="feet">📐 Feet</button>
-                    <button class="unit-btn" data-unit="cm">📏 Centimeters</button>
-                    <button class="unit-btn" data-unit="mm">🔍 Millimeters</button>
-                    <button class="unit-btn" data-unit="inches">📌 Inches</button>
+                    <button class="unit-btn" onclick="selectUnit('meters', this)">📋 Meters</button>
+                    <button class="unit-btn" onclick="selectUnit('feet', this)">📐 Feet</button>
+                    <button class="unit-btn" onclick="selectUnit('cm', this)">📏 Centimeters</button>
+                    <button class="unit-btn" onclick="selectUnit('mm', this)">🔍 Millimeters</button>
+                    <button class="unit-btn" onclick="selectUnit('inches', this)">📌 Inches</button>
                 </div>
                 <p style="color: #92400e; margin-top: 15px; font-size: 11px; text-align: center;">Change later via converter</p>
             </div>
@@ -232,6 +232,6 @@
             </div>
         </div>
     </div>
-    <script src="/app.js"></script>
+    <script src="./app.js"></script>
 </body>
 </html>
