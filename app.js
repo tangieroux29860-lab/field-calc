@@ -16,14 +16,14 @@ const unitLabels = {
     'inches': 'in'
 };
 
-function selectUnit(unit) {
+function selectUnit(unit, btn) {
     currentUnit = unit;
-    document.querySelectorAll('.unit-btn').forEach(btn => {
-        btn.classList.remove('selected');
-        if (btn.dataset.unit === unit) {
-            btn.classList.add('selected');
-        }
-    });
+    // Remove selected from all buttons
+    document.querySelectorAll('.unit-btn').forEach(b => b.classList.remove('selected'));
+    // Add selected to clicked button
+    if (btn) {
+        btn.classList.add('selected');
+    }
     updateUnitDisplay();
     setTimeout(() => {
         document.getElementById('unitScreen').classList.remove('active');
@@ -229,42 +229,6 @@ function calculateCircle(type) {
                     result = {
                         'Center East': ux.toFixed(4),
                         'Center North': uy.toFixed(4),
-                        'Radius': radiusOut.toFixed(4) + ' ' + unitLabels[outputUnit]
-                    };
-                }
-            }
-        } else if (type === 'twopoints') {
-            const p1e = parseFloat(document.getElementById('circ2-p1e').value);
-            const p1n = parseFloat(document.getElementById('circ2-p1n').value);
-            const p2e = parseFloat(document.getElementById('circ2-p2e').value);
-            const p2n = parseFloat(document.getElementById('circ2-p2n').value);
-            const radius = parseFloat(document.getElementById('circ2-radius').value);
-            
-            if (isNaN(p1e) || isNaN(p1n) || isNaN(p2e) || isNaN(p2n) || isNaN(radius)) {
-                error = 'Please fill all fields';
-            } else if (radius <= 0) {
-                error = 'Radius must be positive';
-            } else {
-                const midE = (p1e + p2e) / 2;
-                const midN = (p1n + p2n) / 2;
-                const d = Math.sqrt((p2e - p1e) * (p2e - p1e) + (p2n - p1n) * (p2n - p1n));
-                
-                if (d > 2 * radius) {
-                    error = 'Points are too far apart for this radius';
-                } else {
-                    const h = Math.sqrt(radius * radius - (d / 2) * (d / 2));
-                    const px = (p2n - p1n) / d;
-                    const py = (p1e - p2e) / d;
-                    
-                    const c1e = midE + h * px;
-                    const c1n = midN + h * py;
-                    const radiusOut = convertToUnit(radius, outputUnit);
-                    
-                    result = {
-                        'Center 1 East': c1e.toFixed(4),
-                        'Center 1 North': c1n.toFixed(4),
-                        'Center 2 East': (midE - h * px).toFixed(4),
-                        'Center 2 North': (midN - h * py).toFixed(4),
                         'Radius': radiusOut.toFixed(4) + ' ' + unitLabels[outputUnit]
                     };
                 }
@@ -558,22 +522,12 @@ function displayResults(calcType, resultObj, error) {
 
 // Install as PWA
 if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('./sw.js').catch(() => {});
-}
-
-// Init unit buttons when DOM is ready
-document.addEventListener('DOMContentLoaded', () => {
-    document.querySelectorAll('.unit-btn').forEach(btn => {
-        btn.addEventListener('click', () => {
-            selectUnit(btn.dataset.unit);
-        });
+    // Clear old service workers
+    navigator.serviceWorker.getRegistrations().then(registrations => {
+        registrations.forEach(reg => reg.unregister());
     });
-});
-
-if (document.readyState !== 'loading') {
-    document.querySelectorAll('.unit-btn').forEach(btn => {
-        btn.addEventListener('click', () => {
-            selectUnit(btn.dataset.unit);
-        });
-    });
+    // Register new one
+    setTimeout(() => {
+        navigator.serviceWorker.register('./sw.js').catch(() => {});
+    }, 500);
 }
