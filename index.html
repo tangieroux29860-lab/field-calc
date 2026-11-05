@@ -52,6 +52,8 @@
         .back-btn:hover { background: #fecaca; }
         .calculator-panel { display: flex; flex-direction: column; max-width: 100%; width: 100%; overflow: hidden; }
         .options-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px; }
+        .dim-btn { flex: 1; padding: 8px; border: 2px solid #fed7aa; background: #fffbf0; border-radius: 6px; font-weight: 600; color: #92400e; cursor: pointer; margin-bottom: 10px; }
+        .dim-btn.active { background: #f97316; border-color: #f97316; color: white; }
     </style>
 </head>
 <body>
@@ -83,6 +85,7 @@
                 <button class="menu-btn" onclick="openCalculator('pointline')"><span>Point to Line Distance</span><i data-icon="lucide:arrow-right"></i></button>
                 <button class="menu-btn" onclick="openCalculator('conversion')"><span>Unit Conversion</span><i data-icon="lucide:repeat-2"></i></button>
                 <button class="menu-btn" onclick="openCalculator('circledist')"><span>Circle Distance</span><i data-icon="lucide:target"></i></button>
+                <button class="menu-btn" onclick="openCalculator('intersect')"><span>Intersections</span><i data-icon="lucide:circle"></i></button>
             </div>
             <button class="btn-secondary" onclick="changeUnit()">Change Unit System</button>
         </div>
@@ -130,7 +133,6 @@
                 <div class="form-group"><label>Output Unit</label><select id="circle-output-unit"><option value="meters">Meters</option><option value="feet">Feet</option><option value="cm">Centimeters</option><option value="mm">Millimeters</option><option value="inches">Inches</option></select></div>
                 <div class="tabs">
                     <button class="tab-btn active" onclick="switchTab('circle', 'threepoints')">3Pts</button>
-                    <button class="tab-btn" onclick="switchTab('circle', 'twopoints')">2Pts+R</button>
                 </div>
                 <div id="circle-threepoints" class="tab-content active">
                     <div class="form-group"><label>P1 East</label><input type="number" id="circ-p1e" placeholder="0.00" step="0.0001"></div>
@@ -140,14 +142,6 @@
                     <div class="form-group"><label>P3 East</label><input type="number" id="circ-p3e" placeholder="0.00" step="0.0001"></div>
                     <div class="form-group"><label>P3 North</label><input type="number" id="circ-p3n" placeholder="0.00" step="0.0001"></div>
                     <button class="btn-primary" onclick="calculateCircle('threepoints')">Calculate</button>
-                </div>
-                <div id="circle-twopoints" class="tab-content">
-                    <div class="form-group"><label>P1 East</label><input type="number" id="circ2-p1e" placeholder="0.00" step="0.0001"></div>
-                    <div class="form-group"><label>P1 North</label><input type="number" id="circ2-p1n" placeholder="0.00" step="0.0001"></div>
-                    <div class="form-group"><label>P2 East</label><input type="number" id="circ2-p2e" placeholder="0.00" step="0.0001"></div>
-                    <div class="form-group"><label>P2 North</label><input type="number" id="circ2-p2n" placeholder="0.00" step="0.0001"></div>
-                    <div class="form-group"><label>Radius</label><input type="number" id="circ2-radius" placeholder="0.00" step="0.0001"></div>
-                    <button class="btn-primary" onclick="calculateCircle('twopoints')">Calculate</button>
                 </div>
                 <div id="circle-results" class="results" style="display:none;"></div>
             </div>
@@ -201,6 +195,96 @@
                     <button class="btn-primary" onclick="convertFeetInch()">Convert to Feet-Inch</button>
                 </div>
                 <div id="conversion-results" class="results" style="display:none;"></div>
+            </div>
+            <div id="intersect-calc" class="calculator-panel" style="display:none;">
+                <button class="back-btn" onclick="backToMenu()"><i data-icon="lucide:arrow-left"></i> Back</button>
+                <div class="screen-title"><i data-icon="lucide:circle"></i> Intersections</div>
+                <div class="form-group"><label>Output Unit</label><select id="intersect-output-unit"><option value="meters">Meters</option><option value="feet">Feet</option><option value="cm">Centimeters</option><option value="mm">Millimeters</option><option value="inches">Inches</option></select></div>
+                <div style="display:flex; gap:8px;"><button class="dim-btn active" id="dim-2d-btn" onclick="setIntersectDim('2d')">2D</button><button class="dim-btn" id="dim-3d-btn" onclick="setIntersectDim('3d')">3D</button></div>
+                <div id="intersect-2d-wrap">
+                <div class="tabs">
+                    <button class="tab-btn active" onclick="switchTab('intersect', 'linline')">Line-Line</button>
+                    <button class="tab-btn" onclick="switchTab('intersect', 'circcirc')">Circle-Circle</button>
+                    <button class="tab-btn" onclick="switchTab('intersect', 'linecirc')">Line-Circle</button>
+                </div>
+                <div id="intersect-linline" class="tab-content active">
+                    <div class="form-group"><label>Line 1 Point A East</label><input type="number" id="ll-p1e" placeholder="0.00" step="0.0001"></div>
+                    <div class="form-group"><label>Line 1 Point A North</label><input type="number" id="ll-p1n" placeholder="0.00" step="0.0001"></div>
+                    <div class="form-group"><label>Line 1 Point B East</label><input type="number" id="ll-p2e" placeholder="0.00" step="0.0001"></div>
+                    <div class="form-group"><label>Line 1 Point B North</label><input type="number" id="ll-p2n" placeholder="0.00" step="0.0001"></div>
+                    <div class="form-group"><label>Line 2 Point A East</label><input type="number" id="ll-p3e" placeholder="0.00" step="0.0001"></div>
+                    <div class="form-group"><label>Line 2 Point A North</label><input type="number" id="ll-p3n" placeholder="0.00" step="0.0001"></div>
+                    <div class="form-group"><label>Line 2 Point B East</label><input type="number" id="ll-p4e" placeholder="0.00" step="0.0001"></div>
+                    <div class="form-group"><label>Line 2 Point B North</label><input type="number" id="ll-p4n" placeholder="0.00" step="0.0001"></div>
+                    <button class="btn-primary" onclick="calculateIntersect('linline')">Calculate</button>
+                </div>
+                <div id="intersect-circcirc" class="tab-content">
+                    <div class="form-group"><label>Circle 1 Center East</label><input type="number" id="cc-c1e" placeholder="0.00" step="0.0001"></div>
+                    <div class="form-group"><label>Circle 1 Center North</label><input type="number" id="cc-c1n" placeholder="0.00" step="0.0001"></div>
+                    <div class="form-group"><label>Circle 1 Radius</label><input type="number" id="cc-r1" placeholder="0.00" step="0.0001"></div>
+                    <div class="form-group"><label>Circle 2 Center East</label><input type="number" id="cc-c2e" placeholder="0.00" step="0.0001"></div>
+                    <div class="form-group"><label>Circle 2 Center North</label><input type="number" id="cc-c2n" placeholder="0.00" step="0.0001"></div>
+                    <div class="form-group"><label>Circle 2 Radius</label><input type="number" id="cc-r2" placeholder="0.00" step="0.0001"></div>
+                    <button class="btn-primary" onclick="calculateIntersect('circcirc')">Calculate</button>
+                </div>
+                <div id="intersect-linecirc" class="tab-content">
+                    <div class="form-group"><label>Line Point A East</label><input type="number" id="lc-p1e" placeholder="0.00" step="0.0001"></div>
+                    <div class="form-group"><label>Line Point A North</label><input type="number" id="lc-p1n" placeholder="0.00" step="0.0001"></div>
+                    <div class="form-group"><label>Line Point B East</label><input type="number" id="lc-p2e" placeholder="0.00" step="0.0001"></div>
+                    <div class="form-group"><label>Line Point B North</label><input type="number" id="lc-p2n" placeholder="0.00" step="0.0001"></div>
+                    <div class="form-group"><label>Circle Center East</label><input type="number" id="lc-ce" placeholder="0.00" step="0.0001"></div>
+                    <div class="form-group"><label>Circle Center North</label><input type="number" id="lc-cn" placeholder="0.00" step="0.0001"></div>
+                    <div class="form-group"><label>Circle Radius</label><input type="number" id="lc-r" placeholder="0.00" step="0.0001"></div>
+                    <button class="btn-primary" onclick="calculateIntersect('linecirc')">Calculate</button>
+                </div>
+                </div>
+                <div id="intersect-3d-wrap" style="display:none;">
+                    <div class="tabs">
+                        <button class="tab-btn active" onclick="switchTab('intersect', 'linline3d')">Line-Line</button>
+                        <button class="tab-btn" onclick="switchTab('intersect', 'circcirc3d')">Circle-Circle</button>
+                        <button class="tab-btn" onclick="switchTab('intersect', 'linecirc3d')">Line-Circle</button>
+                    </div>
+                    <div id="intersect-linline3d" class="tab-content active">
+                        <div class="form-group"><label>Line 1 Point A East</label><input type="number" id="ll3-p1e" placeholder="0.00" step="0.0001"></div>
+                        <div class="form-group"><label>Line 1 Point A North</label><input type="number" id="ll3-p1n" placeholder="0.00" step="0.0001"></div>
+                        <div class="form-group"><label>Line 1 Point A Z</label><input type="number" id="ll3-p1z" placeholder="0.00" step="0.0001"></div>
+                        <div class="form-group"><label>Line 1 Point B East</label><input type="number" id="ll3-p2e" placeholder="0.00" step="0.0001"></div>
+                        <div class="form-group"><label>Line 1 Point B North</label><input type="number" id="ll3-p2n" placeholder="0.00" step="0.0001"></div>
+                        <div class="form-group"><label>Line 1 Point B Z</label><input type="number" id="ll3-p2z" placeholder="0.00" step="0.0001"></div>
+                        <div class="form-group"><label>Line 2 Point A East</label><input type="number" id="ll3-p3e" placeholder="0.00" step="0.0001"></div>
+                        <div class="form-group"><label>Line 2 Point A North</label><input type="number" id="ll3-p3n" placeholder="0.00" step="0.0001"></div>
+                        <div class="form-group"><label>Line 2 Point A Z</label><input type="number" id="ll3-p3z" placeholder="0.00" step="0.0001"></div>
+                        <div class="form-group"><label>Line 2 Point B East</label><input type="number" id="ll3-p4e" placeholder="0.00" step="0.0001"></div>
+                        <div class="form-group"><label>Line 2 Point B North</label><input type="number" id="ll3-p4n" placeholder="0.00" step="0.0001"></div>
+                        <div class="form-group"><label>Line 2 Point B Z</label><input type="number" id="ll3-p4z" placeholder="0.00" step="0.0001"></div>
+                        <button class="btn-primary" onclick="calculateIntersect3D('linline')">Calculate</button>
+                    </div>
+                    <div id="intersect-linecirc3d" class="tab-content">
+                        <div class="form-group"><label>Line Point A East</label><input type="number" id="lc3-p1e" placeholder="0.00" step="0.0001"></div>
+                        <div class="form-group"><label>Line Point A North</label><input type="number" id="lc3-p1n" placeholder="0.00" step="0.0001"></div>
+                        <div class="form-group"><label>Line Point A Z</label><input type="number" id="lc3-p1z" placeholder="0.00" step="0.0001"></div>
+                        <div class="form-group"><label>Line Point B East</label><input type="number" id="lc3-p2e" placeholder="0.00" step="0.0001"></div>
+                        <div class="form-group"><label>Line Point B North</label><input type="number" id="lc3-p2n" placeholder="0.00" step="0.0001"></div>
+                        <div class="form-group"><label>Line Point B Z</label><input type="number" id="lc3-p2z" placeholder="0.00" step="0.0001"></div>
+                        <div class="form-group"><label>Circle Center East</label><input type="number" id="lc3-ce" placeholder="0.00" step="0.0001"></div>
+                        <div class="form-group"><label>Circle Center North</label><input type="number" id="lc3-cn" placeholder="0.00" step="0.0001"></div>
+                        <div class="form-group"><label>Circle Z (horizontal plane)</label><input type="number" id="lc3-cz" placeholder="0.00" step="0.0001"></div>
+                        <div class="form-group"><label>Circle Radius</label><input type="number" id="lc3-r" placeholder="0.00" step="0.0001"></div>
+                        <button class="btn-primary" onclick="calculateIntersect3D('linecirc')">Calculate</button>
+                    </div>
+                    <div id="intersect-circcirc3d" class="tab-content">
+                        <div class="form-group"><label>Circle 1 Center East</label><input type="number" id="cc3-c1e" placeholder="0.00" step="0.0001"></div>
+                        <div class="form-group"><label>Circle 1 Center North</label><input type="number" id="cc3-c1n" placeholder="0.00" step="0.0001"></div>
+                        <div class="form-group"><label>Circle 1 Z</label><input type="number" id="cc3-c1z" placeholder="0.00" step="0.0001"></div>
+                        <div class="form-group"><label>Circle 1 Radius</label><input type="number" id="cc3-r1" placeholder="0.00" step="0.0001"></div>
+                        <div class="form-group"><label>Circle 2 Center East</label><input type="number" id="cc3-c2e" placeholder="0.00" step="0.0001"></div>
+                        <div class="form-group"><label>Circle 2 Center North</label><input type="number" id="cc3-c2n" placeholder="0.00" step="0.0001"></div>
+                        <div class="form-group"><label>Circle 2 Z</label><input type="number" id="cc3-c2z" placeholder="0.00" step="0.0001"></div>
+                        <div class="form-group"><label>Circle 2 Radius</label><input type="number" id="cc3-r2" placeholder="0.00" step="0.0001"></div>
+                        <button class="btn-primary" onclick="calculateIntersect3D('circcirc')">Calculate</button>
+                    </div>
+                </div>
+                <div id="intersect-results" class="results" style="display:none;"></div>
             </div>
             <div id="circledist-calc" class="calculator-panel" style="display:none;">
                 <button class="back-btn" onclick="backToMenu()"><i data-icon="lucide:arrow-left"></i> Back</button>
