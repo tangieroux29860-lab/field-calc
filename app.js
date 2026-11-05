@@ -502,6 +502,224 @@ function calculateCircleDistance(type) {
     displayResults('circledist', result, error);
 }
 
+// INTERSECTIONS (2D, ENZ output)
+function iv(id) {
+    return parseFloat(document.getElementById(id).value);
+}
+
+function intersectOut(points, unit) {
+    const res = {};
+    points.forEach(p => {
+        res[p.label + ' East'] = convertToUnit(p.e, unit).toFixed(4) + ' ' + unitLabels[unit];
+        res[p.label + ' North'] = convertToUnit(p.n, unit).toFixed(4) + ' ' + unitLabels[unit];
+    });
+    return res;
+}
+
+function calculateIntersect(type) {
+    let result = {};
+    let error = null;
+    const unit = document.getElementById('intersect-output-unit')?.value || currentUnit;
+
+    try {
+        if (type === 'linline') {
+            const v = [iv('ll-p1e'), iv('ll-p1n'), iv('ll-p2e'), iv('ll-p2n'), iv('ll-p3e'), iv('ll-p3n'), iv('ll-p4e'), iv('ll-p4n')];
+            if (v.some(isNaN)) {
+                error = 'Please fill all coordinate fields';
+            } else {
+                const [ax, ay, bx, by, cx, cy, dx, dy] = v;
+                const rx = bx - ax, ry = by - ay;
+                const sx = dx - cx, sy = dy - cy;
+                const den = rx * sy - ry * sx;
+                if (Math.abs(den) < 1e-12) {
+                    error = 'Lines are parallel (no single intersection)';
+                } else {
+                    const t = ((cx - ax) * sy - (cy - ay) * sx) / den;
+                    result = intersectOut([{ label: 'Intersection', e: ax + t * rx, n: ay + t * ry }], unit);
+                }
+            }
+        } else if (type === 'circcirc') {
+            const v = [iv('cc-c1e'), iv('cc-c1n'), iv('cc-r1'), iv('cc-c2e'), iv('cc-c2n'), iv('cc-r2')];
+            if (v.some(isNaN)) {
+                error = 'Please fill all fields';
+            } else if (v[2] <= 0 || v[5] <= 0) {
+                error = 'Radius must be positive';
+            } else {
+                const [x1, y1, r1, x2, y2, r2] = v;
+                const dx = x2 - x1, dy = y2 - y1;
+                const d = Math.hypot(dx, dy);
+                if (d < 1e-12) {
+                    error = 'Circles have the same center';
+                } else if (d > r1 + r2 + 1e-9 || d < Math.abs(r1 - r2) - 1e-9) {
+                    error = 'Circles do not intersect';
+                } else {
+                    const a = (r1 * r1 - r2 * r2 + d * d) / (2 * d);
+                    const h = Math.sqrt(Math.max(0, r1 * r1 - a * a));
+                    const mx = x1 + a * dx / d, my = y1 + a * dy / d;
+                    const pts = [{ label: 'Point 1', e: mx - h * dy / d, n: my + h * dx / d }];
+                    if (h > 1e-9) pts.push({ label: 'Point 2', e: mx + h * dy / d, n: my - h * dx / d });
+                    result = intersectOut(pts, unit);
+                }
+            }
+        } else if (type === 'linecirc') {
+            const v = [iv('lc-p1e'), iv('lc-p1n'), iv('lc-p2e'), iv('lc-p2n'), iv('lc-ce'), iv('lc-cn'), iv('lc-r')];
+            if (v.some(isNaN)) {
+                error = 'Please fill all fields';
+            } else if (v[6] <= 0) {
+                error = 'Radius must be positive';
+            } else {
+                const [ax, ay, bx, by, cx, cy, r] = v;
+                const dx = bx - ax, dy = by - ay;
+                const fx = ax - cx, fy = ay - cy;
+                const A = dx * dx + dy * dy;
+                if (A < 1e-12) {
+                    error = 'Line points must be different';
+                } else {
+                    const B = 2 * (fx * dx + fy * dy);
+                    const C = fx * fx + fy * fy - r * r;
+                    const disc = B * B - 4 * A * C;
+                    if (disc < 0) {
+                        error = 'Line does not intersect the circle';
+                    } else {
+                        const sq = Math.sqrt(disc);
+                        const t1 = (-B - sq) / (2 * A), t2 = (-B + sq) / (2 * A);
+                        const tol = 1e-9;
+                        const cand = [{ label: 'Point 1', t: t1 }];
+                        if (disc > 1e-12) cand.push({ label: 'Point 2', t: t2 });
+                        // Keep only points lying on the segment A-B (t between 0 and 1)
+                        const pts = cand
+                            .filter(c => c.t >= -tol && c.t <= 1 + tol)
+                            .map(c => ({ label: c.label, e: ax + c.t * dx, n: ay + c.t * dy }));
+                        if (pts.length === 0) {
+                            error = 'No intersection within the line segment';
+                        } else {
+                            result = intersectOut(pts, unit);
+                        }
+                    }
+                }
+            }
+        }
+    } catch (e) {
+        error = 'Calculation error: ' + e.message;
+    }
+
+    displayResults('intersect', result, error);
+}
+
+// INTERSECTIONS 3D
+function setIntersectDim(dim) {
+    document.getElementById('intersect-2d-wrap').style.display = dim === '2d' ? 'block' : 'none';
+    document.getElementById('intersect-3d-wrap').style.display = dim === '3d' ? 'block' : 'none';
+    document.getElementById('dim-2d-btn').classList.toggle('active', dim === '2d');
+    document.getElementById('dim-3d-btn').classList.toggle('active', dim === '3d');
+    document.getElementById('intersect-results').style.display = 'none';
+}
+
+function intersectOut3(points, unit) {
+    const res = {};
+    const u = unitLabels[unit];
+    points.forEach(item => {
+        res[item.label + ' East'] = convertToUnit(item.p[0], unit).toFixed(4) + ' ' + u;
+        res[item.label + ' North'] = convertToUnit(item.p[1], unit).toFixed(4) + ' ' + u;
+        res[item.label + ' Z'] = convertToUnit(item.p[2], unit).toFixed(4) + ' ' + u;
+    });
+    return res;
+}
+
+function calculateIntersect3D(type) {
+    let result = {};
+    let error = null;
+    const unit = document.getElementById('intersect-output-unit')?.value || currentUnit;
+    const tolD = 1e-4; // distance tolerance in input units (0.1 mm if meters)
+
+    try {
+        if (type === 'linline') {
+            const v = [iv('ll3-p1e'), iv('ll3-p1n'), iv('ll3-p1z'), iv('ll3-p2e'), iv('ll3-p2n'), iv('ll3-p2z'), iv('ll3-p3e'), iv('ll3-p3n'), iv('ll3-p3z'), iv('ll3-p4e'), iv('ll3-p4n'), iv('ll3-p4z')];
+            if (v.some(isNaN)) {
+                error = 'Please fill all coordinate fields';
+            } else {
+                const A = v.slice(0, 3), B = v.slice(3, 6), C = v.slice(6, 9), D = v.slice(9, 12);
+                const u = [B[0] - A[0], B[1] - A[1], B[2] - A[2]];
+                const w = [D[0] - C[0], D[1] - C[1], D[2] - C[2]];
+                const w0 = [A[0] - C[0], A[1] - C[1], A[2] - C[2]];
+                const dot = (p, q) => p[0] * q[0] + p[1] * q[1] + p[2] * q[2];
+                const a = dot(u, u), b = dot(u, w), c = dot(w, w), d = dot(u, w0), e = dot(w, w0);
+                const den = a * c - b * b;
+                if (Math.abs(den) < 1e-12) {
+                    error = 'Lines are parallel (no unique closest point)';
+                } else {
+                    const t = (b * e - c * d) / den;
+                    const s = (a * e - b * d) / den;
+                    const P = [A[0] + t * u[0], A[1] + t * u[1], A[2] + t * u[2]];
+                    const Q = [C[0] + s * w[0], C[1] + s * w[1], C[2] + s * w[2]];
+                    const gap = Math.sqrt((P[0] - Q[0]) ** 2 + (P[1] - Q[1]) ** 2 + (P[2] - Q[2]) ** 2);
+                    if (gap < tolD) {
+                        result = intersectOut3([{ label: 'Intersection', p: P }], unit);
+                    } else {
+                        result = intersectOut3([{ label: 'Closest point Line 1', p: P }, { label: 'Closest point Line 2', p: Q }], unit);
+                        result['Minimum distance (lines do not meet)'] = convertToUnit(gap, unit).toFixed(4) + ' ' + unitLabels[unit];
+                    }
+                }
+            }
+        } else if (type === 'linecirc') {
+            const v = [iv('lc3-p1e'), iv('lc3-p1n'), iv('lc3-p1z'), iv('lc3-p2e'), iv('lc3-p2n'), iv('lc3-p2z'), iv('lc3-ce'), iv('lc3-cn'), iv('lc3-cz'), iv('lc3-r')];
+            if (v.some(isNaN)) {
+                error = 'Please fill all fields';
+            } else if (v[9] <= 0) {
+                error = 'Radius must be positive';
+            } else {
+                const A = v.slice(0, 3), B = v.slice(3, 6);
+                const cx = v[6], cy = v[7], cz = v[8], r = v[9];
+                const dz = B[2] - A[2];
+                if (Math.abs(dz) < 1e-12) {
+                    error = 'Line is level (constant Z): it cannot cross the circle plane at one point';
+                } else {
+                    const t = (cz - A[2]) / dz;
+                    if (t < -1e-9 || t > 1 + 1e-9) {
+                        error = 'Line segment does not reach the circle plane (Z)';
+                    } else {
+                        const P = [A[0] + t * (B[0] - A[0]), A[1] + t * (B[1] - A[1]), cz];
+                        const miss = Math.abs(Math.hypot(P[0] - cx, P[1] - cy) - r);
+                        if (miss > tolD) {
+                            error = 'Line crosses the circle plane but misses the circle by ' + convertToUnit(miss, unit).toFixed(4) + ' ' + unitLabels[unit];
+                        } else {
+                            result = intersectOut3([{ label: 'Intersection', p: P }], unit);
+                        }
+                    }
+                }
+            }
+        } else if (type === 'circcirc') {
+            const v = [iv('cc3-c1e'), iv('cc3-c1n'), iv('cc3-c1z'), iv('cc3-r1'), iv('cc3-c2e'), iv('cc3-c2n'), iv('cc3-c2z'), iv('cc3-r2')];
+            if (v.some(isNaN)) {
+                error = 'Please fill all fields';
+            } else if (v[3] <= 0 || v[7] <= 0) {
+                error = 'Radius must be positive';
+            } else if (Math.abs(v[2] - v[6]) > tolD) {
+                error = 'Circles are at different Z (no intersection)';
+            } else {
+                const x1 = v[0], y1 = v[1], z1 = v[2], r1 = v[3], x2 = v[4], y2 = v[5], r2 = v[7];
+                const dx = x2 - x1, dy = y2 - y1, d = Math.hypot(dx, dy);
+                if (d < 1e-12) {
+                    error = 'Circles have the same center';
+                } else if (d > r1 + r2 + tolD || d < Math.abs(r1 - r2) - tolD) {
+                    error = 'Circles do not intersect';
+                } else {
+                    const a = (r1 * r1 - r2 * r2 + d * d) / (2 * d);
+                    const h = Math.sqrt(Math.max(0, r1 * r1 - a * a));
+                    const mx = x1 + a * dx / d, my = y1 + a * dy / d;
+                    const pts = [{ label: 'Point 1', p: [mx - h * dy / d, my + h * dx / d, z1] }];
+                    if (h > tolD) pts.push({ label: 'Point 2', p: [mx + h * dy / d, my - h * dx / d, z1] });
+                    result = intersectOut3(pts, unit);
+                }
+            }
+        }
+    } catch (e) {
+        error = 'Calculation error: ' + e.message;
+    }
+
+    displayResults('intersect', result, error);
+}
+
 // Display Results
 function displayResults(calcType, resultObj, error) {
     const resultsDiv = document.getElementById(calcType + '-results');
